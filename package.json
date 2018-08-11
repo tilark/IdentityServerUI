@@ -6,6 +6,7 @@
   "author": "Pan <panfree23@gmail.com>",
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "mydev": "webpack-dev-server --inline --progress --config build/webpack.mydev.conf.js",
     "start": "npm run dev",
     "build": "node build/build.js",
     "build:report": "npm_config_report=true node build/build.js",
@@ -14,8 +15,10 @@
   },
   "dependencies": {
     "axios": "0.17.1",
+    "axios-mock-adapter": "^1.15.0",
     "element-ui": "2.3.4",
     "js-cookie": "2.2.0",
+    "mockjs": "^1.0.1-beta3",
     "normalize.css": "7.0.0",
     "nprogress": "0.2.0",
     "vue": "2.5.10",

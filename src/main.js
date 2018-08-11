@@ -12,11 +12,17 @@ import App from './App'
 import router from './router'
 import store from './store'
 
+// import Mock from './mock'
+
 import '@/icons' // icon
 import '@/permission' // permission control
 
 Vue.use(ElementUI, { locale })
 
+// if (process.env.NODE_ENV === 'mydevelopment') {
+//   console.log('enter mock.bootstrap')
+//   Mock.bootstrap()
+// }
 Vue.config.productionTip = false
 
 new Vue({
