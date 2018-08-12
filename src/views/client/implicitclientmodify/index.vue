@@ -1,9 +1,9 @@
 <template>
 <div>
   <h2 style="text-align:center;">管理Client</h2>
-  <el-row type="flex" justify="center">
+  <el-row justify="left">
     <el-col :span='18'>
-  <el-form :model="implicitClient" label-width="160px" :rules="implicitClientRules" ref="implicitClient">
+  <el-form :model="implicitClient" label-width="200px" :rules="implicitClientRules" ref="implicitClient">
     <el-form-item label='AllowedGrantType'>
       <el-input :disabled='true' v-model="implicitClient.allowedGrantTypes"></el-input>
     </el-form-item>
@@ -14,26 +14,62 @@
       <el-input v-model="implicitClient.clientName">
       </el-input>
     </el-form-item>
-    <el-form-item label="redirectUris">
-      <el-tooltip class="item" effect="dark" content="多路径用','分开" placement="right">
-        <el-input v-model="implicitClient.redirectUris"></el-input>
-      </el-tooltip>
+    <el-form-item
+    v-for="(item, index) in implicitClient.redirectUris"
+    :label="'RedirectUri' + index"
+    :key="item.key"
+    :prop="'redirectUris.' + index + '.value'"
+    :rules="{
+      required: true, message: 'redirecturi不能为空', trigger: 'blur'
+    }"
+    >
+    <el-col :span='15'>
+      <el-input v-model="item.value"></el-input>
+    </el-col>
+    <span>&nbsp;</span>
+    <el-button type="primary" @click="addRedirecturi"><i class="el-icon-plus"></i></el-button>
+    <el-button type="danger" @click.prevent="removeRedirecturi(item)"><i class="el-icon-delete"></i></el-button>
     </el-form-item>
-    <el-form-item label="postLogoutRedirectUris">
-      <el-tooltip class="item" effect="dark" content="多路径用','分开" placement="right">
-        <el-input v-model="implicitClient.postLogoutRedirectUris"></el-input>
-      </el-tooltip>
+    <el-form-item
+    v-for="(item, index) in implicitClient.postLogoutRedirectUris"
+    :label="'PostLogoutRedirectUri' + index"
+    :key="item.key"
+    :prop="'postLogoutRedirectUris.' + index + '.value'"
+    :rules="{
+      required: true, message: 'postLogoutRedirectUri不能为空', trigger: 'blur'
+    }"
+    >
+    <el-col :span='15'>
+      <el-input v-model="item.value"></el-input>
+    </el-col>
+    <span>&nbsp;</span>
+    <el-button type="primary" @click="addPostLogoutRedirectUri"><i class="el-icon-plus"></i></el-button>
+    <el-button type="danger" @click.prevent="removePostLogoutRedirectUri(item)"><i class="el-icon-delete"></i></el-button>
     </el-form-item>
-    <el-form-item label="allowedScopes">
-      <el-select v-model="implicitClient.allowedScopes" multiple filterable size="medium"  placeholder="请选择">
-        <el-option  v-for="item in apiScopes" :key="item.value"  :label="item.label"  :value="item.value">
+    <el-form-item
+    v-for="(item, index) in implicitClient.allowedCorsOrigins"
+    :label="'AllowedCorsOrigins' + index"
+    :key="item.key"
+    :prop="'allowedCorsOrigins.' + index + '.value'"
+    :rules="{
+      required: true, message: 'AllowedCorsOrigin不能为空', trigger: 'blur'
+    }"
+    >
+    <el-col :span='15'>
+      <el-input v-model="item.value"></el-input>
+    </el-col>
+    <span>&nbsp;</span>
+    <el-button type="primary" @click="addAllowedCorsOrigins"><i class="el-icon-plus"></i></el-button>
+    <el-button type="danger" @click.prevent="removeAllowedCorsOrigins(item)"><i class="el-icon-delete"></i></el-button>
+    </el-form-item>
+
+    <el-form-item label="AllowedScopes">
+      <el-col :span='15'>
+        <el-select v-model="implicitClient.allowedScopes" multiple filterable size="medium"  placeholder="请选择">
+          <el-option  v-for="item in apiScopes" :key="item.value"  :label="item.label"  :value="item.value">
         </el-option>
       </el-select>
-    </el-form-item>
-     <el-form-item label="allowedCorsOrigins">
-      <el-tooltip class="item" effect="dark" content="多路径用','分开" placement="right">
-        <el-input v-model="implicitClient.allowedCorsOrigins"></el-input>
-      </el-tooltip>
+      </el-col>
     </el-form-item>
     <el-form-item>
       <el-button @click.native="submit" :loading="addLoading">保存</el-button>
@@ -55,10 +91,10 @@ export default {
         clientId: '',
         clientName: '',
         allowedGrantTypes: 'Implicit',
-        redirectUris: '',
-        postLogoutRedirectUris: '',
+        redirectUris: [{ value: '' }],
+        postLogoutRedirectUris: [{ value: '' }],
         allowedScopes: [],
-        allowedCorsOrigins: ''
+        allowedCorsOrigins: [{ value: '' }]
       },
       implicitClientRules: {
         clientId: [
@@ -78,8 +114,12 @@ export default {
         if (valid) {
           this.$confirm('确认提交吗?', '提示', {}).then(() => {
             this.addLoading = true
-            //  发到后台，创建一个入库单
-            postImplicitClientCreate(this.implicitClient).then((res) => {
+            //  发到后台，创建一个入库单，转换implicitClient
+            const implicitClientMap = Object.assign({}, this.implicitClient)
+            implicitClientMap.redirectUris = implicitClientMap.redirectUris.map(a => a.value.trim())
+            implicitClientMap.postLogoutRedirectUris = implicitClientMap.postLogoutRedirectUris.map(a => a.value)
+            implicitClientMap.allowedCorsOrigins = implicitClientMap.allowedCorsOrigins.map(a => a.value)
+            postImplicitClientCreate(implicitClientMap).then((res) => {
               this.addLoading = false
               this.$message({
                 message: '创建成功',
@@ -96,7 +136,10 @@ export default {
             })
           })
         } else {
-          console.log('enter InRepositoryCreate 验证失败')
+          this.$message({
+            message: '验证失败',
+            type: 'error'
+          })
         }
       })
     },
@@ -109,6 +152,42 @@ export default {
       }).catch(error => {
         console.log(error)
         this.apiScopes.push({ value: 'Error', label: 'Error' })
+      })
+    },
+    removeRedirecturi(item) {
+      var index = this.implicitClient.redirectUris.indexOf(item)
+      if (index !== -1 && this.implicitClient.redirectUris.length > 1) {
+        this.implicitClient.redirectUris.splice(index, 1)
+      }
+    },
+    addRedirecturi() {
+      this.implicitClient.redirectUris.push({
+        value: '',
+        key: Date.now()
+      })
+    },
+    removePostLogoutRedirectUri(item) {
+      var index = this.implicitClient.postLogoutRedirectUris.indexOf(item)
+      if (index !== -1 && this.implicitClient.postLogoutRedirectUris.length > 1) {
+        this.implicitClient.postLogoutRedirectUris.splice(index, 1)
+      }
+    },
+    addPostLogoutRedirectUri() {
+      this.implicitClient.postLogoutRedirectUris.push({
+        value: '',
+        key: Date.now()
+      })
+    },
+    removeAllowedCorsOrigins(item) {
+      var index = this.implicitClient.allowedCorsOrigins.indexOf(item)
+      if (index !== -1 && this.implicitClient.allowedCorsOrigins.length > 1) {
+        this.implicitClient.allowedCorsOrigins.splice(index, 1)
+      }
+    },
+    addAllowedCorsOrigins() {
+      this.implicitClient.allowedCorsOrigins.push({
+        value: '',
+        key: Date.now()
       })
     }
   },
