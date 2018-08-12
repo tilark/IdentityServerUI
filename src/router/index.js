@@ -61,21 +61,21 @@ export const constantRouterMap = [
   {
     path: '/client',
     component: Layout,
-    redirect: '/client/clientlist',
+    redirect: '/client/implicitclients',
     name: 'Client',
     meta: { title: 'Client', icon: 'example' },
     children: [
       {
-        path: 'clientlist',
-        name: 'ClientList',
-        component: () => import('@/views/client/clientlist'),
-        meta: { title: 'ClientList', icon: 'table' }
+        path: 'implicitclients',
+        name: 'ImplicitClients',
+        component: () => import('@/views/client/implicitclients'),
+        meta: { title: 'ImplicitClients', icon: 'table' }
       },
       {
-        path: 'clientmodify',
-        name: 'ClientModify',
-        component: () => import('@/views/client/clientmodify'),
-        meta: { title: 'ClientModify', icon: 'tree' }
+        path: 'implicitclientmodify',
+        name: 'ImplicitClientModify',
+        component: () => import('@/views/client/implicitclientmodify'),
+        meta: { title: 'ImplicitClientModify', icon: 'tree' }
       }
     ]
   },
